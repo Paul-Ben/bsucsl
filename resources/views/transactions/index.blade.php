@@ -7,11 +7,6 @@
             <div class="bg-light rounded h-100 p-4">
                 <div class="m-n2 d-flex justify-content-end">
                     <button type="button" class="btn btn-primary m-2">
-                        <a href="{{route('feesetup.create')}}" style="color: #fff;">
-                            <i class="fa fa-plus me-2"></i>Add Fee
-                        </a>
-                    </button>
-                    <button type="button" class="btn btn-primary m-2">
                         <a href="{{url()->previous()}}" style="color: #fff;">
                             <i class="fa fa-arrow-left me-2"></i>Go Back
                         </a>
@@ -38,25 +33,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($fees as $fee)
+                            @forelse ($transactions as $transaction)
                                 <tr>
                                     <th scope="row">{{ $loop->index + 1 }}</th>
-                                    <td>{{ $fee->name }}</td>
-                                    <td>{{ $fee->amount }}</td>
+                                    <td>{{ $transaction->name }}</td>
+                                    <td>{{ $transaction->amount }}</td>
                                     <td>
                                         <div class="nav-item dropdown">
                                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Update</a>
                                             <div class="dropdown-menu">
-                                                <a href="{{route('feesetup.edit', $fee)}}" class="dropdown-item">Edit</a>
-                                                <form id="deleteForm" action="{{ route('feesetup.destroy', $fee) }}" method="POST" style="display: inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <a href="#" class="dropdown-item btn btn-danger" onclick="deleteFeeSetup()">Delete</a>
-                                                </form>
-                                                
-                                                
-                                                
-                                               
+                                                <a href="{{route('feesetup.edit', $transaction)}}" class="dropdown-item">Edit</a>
                                             </div>
                                         </div>
                                     </td>
@@ -64,7 +50,7 @@
                                 
                             @empty
                             <tr>
-                                <td class="text-center" colspan="4">No Fee Setup</td>
+                                <td class="text-center" colspan="4">No Transactions</td>
                             </tr>
                             @endforelse
                             {{-- <tr>

@@ -26,8 +26,8 @@ class PaymentController extends Controller
     }
     public function feeSetUpStore(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
+       $validator = $request->validate([
+            'name' => 'required|unique:fee_setups,name',
             'amount' => 'required',
         ]);
 
@@ -74,6 +74,14 @@ class PaymentController extends Controller
         Log::info('Fee Setup Deleted Successfully by ' . Auth::user()->name);
         return redirect()->route('feesetup.index')->with($notification);
     }
+
+    public function transactions()
+    {
+        $authUser = Auth::user();
+        $transactions = Transaction::all();
+        return view('transactions.index', compact('transactions', 'authUser'));
+    }
+
     public function index(Faculty $faculty)
     {
         $faculties = Faculty::all();

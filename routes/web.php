@@ -19,6 +19,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/feesetup/{fee}', [PaymentController::class, 'feeSetUpEdit'])->name('feesetup.edit');
     Route::patch('/feesetup/{fee}', [PaymentController::class, 'feeSetUpUpdate'])->name('feesetup.update');
     Route::delete('/feesetup/{fee}', [PaymentController::class, 'feeSetUpDestroy'])->name('feesetup.destroy');
+    Route::get('/transactions', [PaymentController::class, 'transactions'])->name('transactions');
+    
     Route::get('/pay', [PaymentController::class, 'index'])->name('pay');
     Route::post('/pay', [PaymentController::class, 'initialize'])->name('pay.initialize');
     Route::get('/callback', [PaymentController::class, 'callback'])->name('callback');

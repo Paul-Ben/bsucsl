@@ -61,7 +61,7 @@
                 </div>
                 <div class="navbar-nav w-100">
                     <a href="{{route('dashboard')}}" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
-                    <a href="manage_session.html" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Transactions</a>
+                    <a href="{{route('transactions')}}" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Transactions</a>
                     <a href="{{route('feesetup.index')}}" class="nav-item nav-link"><i class="far fa-file-alt me-2"></i>Fee Setup</a>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-graduation-cap me-2"></i>Student Record</a>
