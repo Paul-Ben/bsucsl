@@ -8,9 +8,72 @@ use App\Models\FeeSetup;
 use App\Models\Registration;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    public function feeSetUpIndex()
+    {
+        $authUser = Auth::user();
+        $fees = FeeSetup::all();
+        return view('feesetup.index', compact('fees', 'authUser'));
+    }
+    public function feeSetUpCreate()
+    {
+        $authUser = Auth::user();
+        return view('feesetup.create', compact('authUser'));
+    }
+    public function feeSetUpStore(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'amount' => 'required',
+        ]);
+
+        FeeSetup::create([
+            'name' => $request->name,
+            'amount' => $request->amount,
+        ]);
+        $notification = array(
+            'message' => 'Fee Setup Created Successfully',
+            'alert-type' => 'success'
+        );
+        Log::info('Fee Setup Created Successfully by ' . Auth::user()->name);
+        return redirect()->route('feesetup.index')->with($notification);
+    }
+    public function feeSetUpEdit(FeeSetup $fee)
+    {
+        return view('feesetup.edit', compact('fee'));
+    }
+    public function feeSetUpUpdate(Request $request, FeeSetup $fee)
+    {
+        $request->validate([
+            'name' => 'required',
+            'amount' => 'required',
+        ]);
+
+        $fee->update([
+            'name' => $request->name,
+            'amount' => $request->amount,
+        ]);
+        $notification = array(
+            'message' => 'Fee Setup Updated Successfully',
+            'alert-type' => 'success'
+        );
+        Log::info('Fee Setup Updated Successfully by ' . Auth::user()->name);
+        return redirect()->route('feesetup.index')->with($notification);
+    }
+    public function feeSetUpDestroy(FeeSetup $fee)
+    {
+        $fee->delete();
+        $notification = array(
+            'message' => 'Fee Setup Deleted Successfully',
+            'alert-type' => 'success'
+        );
+        Log::info('Fee Setup Deleted Successfully by ' . Auth::user()->name);
+        return redirect()->route('feesetup.index')->with($notification);
+    }
     public function index(Faculty $faculty)
     {
         $faculties = Faculty::all();
