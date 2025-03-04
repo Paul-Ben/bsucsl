@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -173,4 +173,109 @@
             </div>
         </div>
     </body>
+</html> --}}
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+        }
+
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            margin-top: 50px;
+        }
+
+        .form-control {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #fff;
+        }
+
+        .form-control:focus {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-color: #66afe9;
+            box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 form-container">
+                <h2 class="text-center mb-4">E-Learning Registration Form</h2>
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name:</label>
+                                <input type="text" class="form-control" id="name" placeholder="Enter your name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                            </div>
+                            <div class="mb-3">
+                                <label for="jambNo" class="form-label">JAMB No:</label>
+                                <input type="text" class="form-control" id="jambNo" placeholder="Enter your JAMB No">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department:</label>
+                                <select class="form-control" id="department">
+                                    <option value="computer_science">Computer Science</option>
+                                    <option value="electrical_engineering">Electrical Engineering</option>
+                                    <option value="mechanical_engineering">Mechanical Engineering</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="faculty" class="form-label">Faculty:</label>
+                                <select class="form-control" id="faculty">
+                                    <option value="engineering">Engineering</option>
+                                    <option value="science">Science</option>
+                                    <option value="arts">Arts</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="paymentItem" class="form-label">Payment Item:</label>
+                                <select class="form-control" id="paymentItem">
+                                    <option value="tuition">Tuition</option>
+                                    <option value="accommodation">Accommodation</option>
+                                    <option value="library_fees">Library Fees</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
 </html>
