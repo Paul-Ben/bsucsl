@@ -9,10 +9,22 @@ use App\Models\Registration;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\DataTables;
 
 class PaymentController extends Controller
 {
+    public function indexPage()
+    {
+        $user = Auth::user();
+        $faculties = Faculty::all();
+        $departments = Department::all();
+        $fees = FeeSetup::all();
+
+        return view('welcome', compact('user', 'faculties', 'departments', 'fees'));
+    }
     public function feeSetUpIndex()
     {
         $authUser = Auth::user();
@@ -26,7 +38,7 @@ class PaymentController extends Controller
     }
     public function feeSetUpStore(Request $request)
     {
-       $validator = $request->validate([
+        $validator = $request->validate([
             'name' => 'required|unique:fee_setups,name',
             'amount' => 'required',
         ]);
@@ -75,10 +87,21 @@ class PaymentController extends Controller
         return redirect()->route('feesetup.index')->with($notification);
     }
 
-    public function transactions()
+    public function transactions(Request $request)
     {
         $authUser = Auth::user();
-        $transactions = Transaction::all();
+        if ($request->ajax()) {
+            $data = Transaction::query();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+                    $btn = '<a href="javascript:void(0)" class="edit btn btn-primary btn-sm">View</a>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        $transactions = Transaction::orderBy('id', 'desc')->paginate(10);
         return view('transactions.index', compact('transactions', 'authUser'));
     }
 
@@ -87,136 +110,277 @@ class PaymentController extends Controller
         $faculties = Faculty::all();
         $departments = Department::all();
         $fees = FeeSetup::all();
-     
+
         return view('pages.pay', compact('faculties', 'departments', 'fees'));
     }
 
     public function initialize(Request $request)
     {
-
-        //This generates a payment reference
-        $reference = 'BSU-CSL2024' . substr(rand(0000, time()), 0, 8);
-        // Flutterwave::generateReference();
-
-        Registrations::create([
-            'email' => request()->email,
-            "phone_number" => request()->phone,
-            "name" => request()->name,
-            "reg_number" => request()->reg_number,
-            "tx_ref" => $reference,
-            "faculty" => request()->faculty,
-            "department" => request()->department,
-            
+        $txRef = 'TX-' . time() . rand(1000, 9999);
+        $secretKey = env('FLW_SECRET_KEY');
+        $request->validate([
+            'email' => 'required|email',
+            'name' => 'required|string',
+            'amount' => 'required|numeric',
+            'jambNo' => 'required|string',
         ]);
-        
-        
 
-        // Enter the details of the payment
-        $data = [
-            'payment_options' => "card,banktransfer, ussd",
-            'amount' => request()->amount,
-            'email' => request()->email,
-            'tx_ref' => $reference,
-            'currency' => "NGN",
-            'redirect_url' => route('callback'),
-            'customer' => [
-                'email' => request()->email,
-                "phone_number" => request()->phone,
-                "name" => request()->name
+        DB::beginTransaction();
 
-            ],
-            "subaccount" => [
-                "id" => "RS_D87A9EE339AE28BFA2AE86041C6DE70E",
-                "transaction_split_ratio" => "0.36"
-            ],
-            "meta" => [
-                "reg_number" => request()->reg_number,
-                "faculty" => request()->faculty,
-                "department" => request()->department,
-            ],
+        try {
+            // Store user registration details
+            $user = Registration::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'reg_number' => $request->jambNo,
+                'amount' => $request->amount,
+                'paymentStatus' => 'pending',
+                'phone_number' => $request->phone_number,
+                'faculty' => $request->faculty,
+                'department' => $request->department,
+                'tx_ref' => $txRef
+            ]);
 
-            "customizations" => [
-                "title" => 'BSU Consultancy Services Ltd',
-                "description" => "Registration Payments.",
-            ]
-        ];
+            // Generate transaction reference
+            $subaccountID = "RS_abc123xyz"; // Replace with actual Flutterwave subaccount ID
+            $mainAccountPercentage = 90; // 90% to main account
+            $subAccountPercentage = 10;
 
-        $payment = Flutterwave::initializePayment($data);
-        
-        if ($payment['status'] !== 'success') {
-            // notify something went wrong
-            return view('errors.unknown');
+            $headers = [
+                'Authorization' => 'Bearer ' . $secretKey,
+                'Content-Type' => 'application/json',
+            ];
+            // Call Flutterwave API to initiate payment
+            $response = Http::withHeaders($headers)->post('https://api.flutterwave.com/v3/payments', [
+                'tx_ref' => $txRef,
+                'amount' => $request->amount,
+                'currency' => 'NGN',
+                'redirect_url' => route('payment.callback'),
+                'payment_options' => 'card, mobilemoneyghana, ussd',
+                'customer' => [
+                    'email' => $request->email,
+                    'phone_number' => $request->phone_number,
+                    'name' => $request->name,
+                ],
+                'customizations' => [
+                    'title' => 'Elearning Training',
+                    'description' => 'Payment for Elearning Training',
+                    'logo' => 'https://www.campus.africa/wp-content/uploads/2018/04/249270c90489c478489dd462bfce82191f3b9429.jpg',
+                ],
+                'subaccounts' => [
+                    [
+                        'id' => $subaccountID,
+                        'transaction_split_ratio' => $subAccountPercentage,
+                    ],
+                ],
+            ])->json();
+
+            if ($response['status'] === 'success') {
+                DB::commit();
+                return redirect($response['data']['link']); // Redirect to payment page
+            }
+
+            DB::rollBack();
+            return back()->with('error', 'Payment initiation failed.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred. Please try again.');
         }
-
-        return redirect($payment['data']['link']);
     }
 
-    public function callback(Registration $registration)
+    public function paymentCallback(Request $request)
     {
 
-        $status = request()->status;
+        $txRef = $request->tx_ref;
+        $status = $request->status;
+        $trxID = $request->trx_id;
 
-        //if payment is successful
+        $payment = Registration::where('tx_ref', $txRef)->first();
+        if (!$payment) {
+            return redirect()->route('home')->with('error', 'Transaction not found.');
+        }
+        // $response = Http::withHeaders([
+        //     'Authorization' => 'Bearer ' . env('FLW_SECRET_KEY'), // Use Flutterwave Secret Key
+        //     'Content-Type' => 'application/json',
+        // ])->get("https://api.flutterwave.com/v3/transactions/{$txRef}/verify")->json();
+
+
+        // if ($response['status'] === 'success' && $response['data']['status'] === 'successful')
         if ($status == 'successful') {
-
-            $transactionID = Flutterwave::getTransactionIDFromCallback();
-            $data = Flutterwave::verifyTransaction($transactionID);
-
-            // dd(request()->all(), $data);
-            // dd($data);
-            $exists = Transaction::where('tx_ref', $data['data']['tx_ref'])->first();
-            
-            if( !$exists ) {
-                Transaction::create([
-                    'reg_number' =>  $data['data']['meta']['reg_number'],
-                    'faculty' => $data['data']['meta']['faculty'],
-                    'department' => $data['data']['meta']['department'],
-                    'name' =>   $data['data']['customer']['name'],
-                    'email' =>  $data['data']['customer']['email'],
-                    'phone_number' =>  $data['data']['customer']['phone_number'],
-                    'amount_settled' => $data['data']['amount_settled'],
-                    'amount' => $data['data']['amount'],
-                    'tx_ref' =>  $data['data']['tx_ref'],
-                    'txr_id' => $data['data']['id'],
-                    'paymentStatus' => $data['data']['status'],
-                    
-                ]);
-
-                $registration = Registration::where('tx_ref', $data['data']['tx_ref']);
-                $registration->update([
-                    'paymentStatus' =>  $data['data']['status'],
-                    'amount' =>  $data['data']['amount'],
-                    'txr_id'  =>   request()->transaction_id,
-                    'amount_settled'  =>  $data['data']['amount_settled'],
-                ]);
-                $receipt_info = Transaction::all()->where('tx_ref', $data['data']['tx_ref'])->first();
-
-                // dd($receipt_info);
-                return view('pages.receipt',  compact('receipt_info'));
-                } else{
-                return redirect()->route('register');
-           }
-
-        } elseif ($status == 'cancelled') {
-
-            $registration = Registration::where('tx_ref', request()->tx_ref);
-            $registration->update([
-                
-                'paymentStatus' =>  "cancled",
-                'amount' =>  '0.00',
-                'amount_settled'  =>  '0.00',
+            $trxn = Transaction::create([
+                'name' => $payment->name,
+                'email' => $payment->email,
+                'reg_number' => $payment->reg_number,
+                'amount' => $payment->amount,
+                'paymentStatus' => $status,
+                'phone_number' => $payment->phone_number,
+                'faculty' => $payment->faculty,
+                'department' => $payment->department,
+                'tx_ref' => $txRef,
+                'txr_id' => $trxID
             ]);
-            return view('errors.cancled');
-        } else {
-            $registration = Registrations::where('tx_ref', request()->tx_ref);
-            $registration->update([
-                
-                'paymentStatus' =>  "failed",
-                'amount' =>  '0.00',
-                'amount_settled'  =>  '0.00',
-            ]);
-            return view('errors.failed');
+            $payment->update(['paymentStatus' => 'successful']);
+            return redirect()->route('home')->with('success', 'Payment successful!');
         }
 
+        $payment->update(['paymentStatus' => 'failed']);
+        return redirect()->route('home')->with('error', 'Payment failed.');
     }
+    // public function store(Request $request)
+    // {
+
+    //     $request->validate([
+    //         'name' => 'required',
+    //         'email' => 'required|email',
+    //         // 'phone' => 'required',
+    //         'amount' => 'required',
+    //         'jambNo' => 'required',
+    //         'faculty' => 'required',
+    //         'department' => 'required',
+    //     ]);
+
+    //     $transaction = Transaction::create([
+    //         'name' => $request->name,
+    //         'email' => $request->email,
+    //         // 'phone' => $request->phone,
+    //         'amount' => $request->amount,
+    //         'jamb_no' => $request->jambNo,
+    //         'faculty' => $request->faculty,
+    //         'department' => $request->department,
+    //     ]);
+
+    //     return redirect()->route('payment.initialize', ['transaction' => $transaction]);
+    // }
+
+    /**
+     * Initialize a Flutterwave Payment
+     */
+    // public function initialize(Request $request)
+    // {
+    //     $secretKey = env('FLW_SECRET_KEY');
+    //     $url = 'https://api.flutterwave.com/v3/payments';
+    //     $tx_ref = 'BSUCSL2025' . substr(rand(0000, time()), 0, 8);
+
+    //     $request->validate([
+    //         'name' => 'required',
+    //         'email' => 'required|email',
+    //         'phone' => 'required',
+    //         'amount' => 'required',
+    //         'jambNo' => 'required',
+    //         'faculty' => 'required',
+    //         'department' => 'required',
+    //     ]);
+
+    //     $data = [
+    //         'tx_ref' => $tx_ref,
+    //         'amount' => $request->amount,
+    //         'currency' => 'NGN',
+    //         'redirect_url' => route('payment.callback'),
+    //         'customer' => [
+    //             'email' => $request->email,
+    //             'name' => $request->name,
+    //             'phonenumber' => $request->phone,
+    //         ],
+    //         'meta' => [
+    //             'jambNo' => $request->jambNo,
+    //             'faculty' => $request->faculty,
+    //             'department' => $request->department,
+    //         ],
+    //         'customizations' => [
+    //             'title' => 'BSU-CSL E-Learning Registration',
+    //         ],
+    //     ];
+
+    //     $headers = [
+    //         'Authorization' => 'Bearer ' . $secretKey,
+    //         'Content-Type' => 'application/json',
+    //     ];
+
+    //     try {
+    //         // $response = Http::withHeaders($headers)->post($url, $data);
+    //         $response = Http::accept('application/json')->withHeaders([
+    //             'authorization' => env('FLW_PUBLIC_KEY'),
+    //             'content-type' => 'application/json',
+    //             'cache-control' => 'no-cache',
+    //         ])->post($url, $data);
+
+    //         if ($response->successful()) {
+    //             $responseData = $response->json();
+    //         Log::info('Payment Initialized Successfully: ' . json_encode($responseData));
+    //             return view('payment.redirect', ['payment_link' => $responseData['data']['link']]);
+    //         } else {
+    //             Log::error('Payment Initialization Failed: ' . $response->body());
+    //             return view('payment.error', ['message' => 'Payment initialization failed.']);
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::error('Payment Initialization Error: ' . $e->getMessage());
+    //         return view('payment.error', ['message' => 'An error occurred during initialization: ' . $e->getMessage()]);
+    //     }
+    // }
+
+    // /**
+    //  * Handle the Flutterwave Payment Callback
+    //  */
+    // public function callback(Request $request)
+    // {
+    //     $transaction_id = $request->query('transaction_id'); // Get transaction ID from Flutterwave
+
+    //     if (!$transaction_id) {
+    //         return view('payment.error', ['message' => 'Transaction ID is missing.']);
+    //     }
+
+    //     // Verify Transaction
+    //     $secretKey = env('FLW_SECRET_KEY');
+    //     $url = "https://api.flutterwave.com/v3/transactions/{$transaction_id}/verify";
+
+    //     try {
+    //         $response = Http::withHeaders([
+    //             'Authorization' => 'Bearer ' . $secretKey,
+    //             'Content-Type' => 'application/json',
+    //         ])->get($url);
+
+    //         $responseData = $response->json();
+
+    //         if ($response->successful() && isset($responseData['data'])) {
+    //             $paymentStatus = $responseData['data']['status']; // 'successful', 'failed', 'pending'
+    //             $tx_ref = $responseData['data']['tx_ref'];
+    //             $amountPaid = $responseData['data']['amount'];
+    //             $customerEmail = $responseData['data']['customer']['email'];
+    //             $metaData = $responseData['data']['meta'] ?? [];
+
+    //             if ($paymentStatus === 'successful') {
+    //                 // Save payment details in the database
+    //                 DB::transaction(function () use ($tx_ref, $amountPaid, $customerEmail, $metaData) {
+    //                     Registration::create([
+    //                         'tx_ref' => $tx_ref,
+    //                         'amount' => $amountPaid,
+    //                         'email' => $customerEmail,
+    //                         'status' => 'successful',
+    //                         'jamb_no' => $metaData['jambNo'] ?? null,
+    //                         'faculty' => $metaData['faculty'] ?? null,
+    //                         'department' => $metaData['department'] ?? null,
+    //                     ]);
+    //                 });
+
+    //                 return view('payment.success', [
+    //                     'tx_ref' => $tx_ref,
+    //                     'amount' => $amountPaid,
+    //                     'email' => $customerEmail
+    //                 ]);
+    //             } else {
+    //                 return view('payment.failed', [
+    //                     'tx_ref' => $tx_ref,
+    //                     'message' => 'Payment failed or is pending.'
+    //                 ]);
+    //             }
+    //         } else {
+    //             return view('payment.error', ['message' => 'Invalid transaction verification response.']);
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::error('Payment Callback Error: ' . $e->getMessage());
+
+    //         return view('payment.error', ['message' => 'An error occurred while verifying payment.']);
+    //     }
+    // }
 }

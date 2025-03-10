@@ -30,6 +30,21 @@
     <!-- Template Stylesheet -->
     <link href="{{asset('db/css/style.css')}}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.1/css/buttons.dataTables.min.css">
+
+<!-- DataTables JS and Buttons Extension -->
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap5.min.js"></script>
 </head>
 
 <body>
@@ -63,21 +78,21 @@
                     <a href="{{route('dashboard')}}" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                     <a href="{{route('transactions')}}" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Transactions</a>
                     <a href="{{route('feesetup.index')}}" class="nav-item nav-link"><i class="far fa-file-alt me-2"></i>Fee Setup</a>
-                    <div class="nav-item dropdown">
+                    {{-- <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-graduation-cap me-2"></i>Student Record</a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="student_infor.html" class="dropdown-item">Student Infor</a>
                             <a href="#" class="dropdown-item">Class Student</a>
                         </div>
-                    </div>
-                    <div class="nav-item dropdown">
+                    </div> --}}
+                    {{-- <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-file me-2"></i>Class Manager</a>
                         <div class="dropdown-menu bg-transparent border-0">
                             <a href="class_list.html" class="dropdown-item">Class LIst</a>
                             <a href="class_category.html" class="dropdown-item">Class Category</a>
                         </div>
-                    </div>
-                    <a href="manage_user.html" class="nav-item nav-link"><i class="fa fa-user-circle me-2"></i>Manage User</a>
+                    </div> --}}
+                    {{-- <a href="manage_user.html" class="nav-item nav-link"><i class="fa fa-user-circle me-2"></i>Manage User</a> --}}
 
                     <!-- =====================================
                      I'm only using this commente field for editing 
@@ -99,12 +114,12 @@
                     ===============================================================================================-->
 
                     <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="far fa-file-alt me-2"></i>Pages</a>
+                        {{-- <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="far fa-file-alt me-2"></i>Pages</a> --}}
                         <div class="dropdown-menu bg-transparent border-0">
-                            <a href="signin.html" class="dropdown-item">Sign In</a>
+                            {{-- <a href="signin.html" class="dropdown-item">Sign In</a>
                             <a href="signup.html" class="dropdown-item">Sign Up</a>
                             <a href="404.html" class="dropdown-item">404 Error</a>
-                            <a href="blank.html" class="dropdown-item">Blank Page</a>
+                            <a href="blank.html" class="dropdown-item">Blank Page</a> --}}
                         </div>
                     </div>
                 </div>
@@ -473,6 +488,7 @@
             }
         @endif
     </script>
+    
 </body>
 
 </html>

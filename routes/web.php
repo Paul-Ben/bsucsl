@@ -4,9 +4,13 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// })->name('home');
+Route::get('/', [PaymentController::class, 'indexPage'])->name('home');
+
+Route::get('/callback', [PaymentController::class, 'paymentCallback'])->name('payment.callback');
+Route::post('/registered', [PaymentController::class, 'initialize'])->name('registered.store');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -21,9 +25,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::delete('/feesetup/{fee}', [PaymentController::class, 'feeSetUpDestroy'])->name('feesetup.destroy');
     Route::get('/transactions', [PaymentController::class, 'transactions'])->name('transactions');
     
-    Route::get('/pay', [PaymentController::class, 'index'])->name('pay');
-    Route::post('/pay', [PaymentController::class, 'initialize'])->name('pay.initialize');
-    Route::get('/callback', [PaymentController::class, 'callback'])->name('callback');
+   
 });
 
 Route::middleware('auth')->group(function () {

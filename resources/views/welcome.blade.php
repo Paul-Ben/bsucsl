@@ -174,7 +174,9 @@
         </div>
     </body>
 </html> --}}
-<html>
+
+{{-- <!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -183,30 +185,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #000;
+            background-color: #f0ebeb;
             color: #fff;
             font-family: sans-serif;
         }
 
         .form-container {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgb(255, 255, 255);
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             margin-top: 50px;
         }
 
-        .form-control {
-            background-color: rgba(0, 0, 0, 0.5);
+        /* .form-control {
+            background-color: rgba(234, 227, 227, 0.704);
             border: 1px solid #333;
-            color: #fff;
-        }
+            color: #ffffff;
+        } */
 
         .form-control:focus {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(173, 220, 231, 0.7);
             border-color: #66afe9;
             box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);
-            color: #fff;
+            color: #0b0b0b;
         }
 
         .btn-primary {
@@ -224,28 +226,38 @@
 <body>
     <div class="container">
         <div class="row justify-content-center">
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
             <div class="col-md-8 form-container">
-                <h2 class="text-center mb-4">E-Learning Registration Form</h2>
-                <form>
+                <h2 class="text-center mb-4" style="color: black">E-Learning Registration</h2>
+                <form action="#">
+                    @csrf
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name:</label>
-                                <input type="text" class="form-control" id="name" placeholder="Enter your name">
+                                <input type="text" name="name" class="form-control" id="name"
+                                    placeholder="Enter your name">
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email:</label>
-                                <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                                <input type="email" name="email" class="form-control" id="email"
+                                    placeholder="Enter your email">
                             </div>
                             <div class="mb-3">
                                 <label for="jambNo" class="form-label">JAMB No:</label>
-                                <input type="text" class="form-control" id="jambNo" placeholder="Enter your JAMB No">
+                                <input type="text" name="jambNo" class="form-control" id="jambNo"
+                                    placeholder="Enter your JAMB No">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="department" class="form-label">Department:</label>
-                                <select class="form-control" id="department">
+                                <select class="form-control" name="department" id="department">
                                     <option value="computer_science">Computer Science</option>
                                     <option value="electrical_engineering">Electrical Engineering</option>
                                     <option value="mechanical_engineering">Mechanical Engineering</option>
@@ -253,7 +265,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="faculty" class="form-label">Faculty:</label>
-                                <select class="form-control" id="faculty">
+                                <select class="form-control" name="faculty" id="faculty">
                                     <option value="engineering">Engineering</option>
                                     <option value="science">Science</option>
                                     <option value="arts">Arts</option>
@@ -261,21 +273,260 @@
                             </div>
                             <div class="mb-3">
                                 <label for="paymentItem" class="form-label">Payment Item:</label>
-                                <select class="form-control" id="paymentItem">
-                                    <option value="tuition">Tuition</option>
+                                <select class="form-control" name="amount" id="amount">
+                                    <option value="3850">Tuition</option>
                                     <option value="accommodation">Accommodation</option>
                                     <option value="library_fees">Library Fees</option>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" onclick="makePayment()" class="btn btn-primary">Submit</button>
                 </form>
             </div>
         </div>
     </div>
-
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function makePayment() {
+            FlutterwaveCheckout({
+                public_key: 'FLWPUBK-685fc799ddd9cf3015440fee7268888b-X',
+                tx_ref: 'titanic-48981487343MDI0NzMx',
+                amount: 3850,
+                currency: 'NGN',
+                payment_options: 'card, mobilemoneyghana, ussd',
+                redirect_url: 'https://glaciers.titanic.com/handle-flutterwave-payment',
+                meta: {
+                    consumer_id: 23,
+                    consumer_mac: '92a3-912ba-1192a',
+                },
+                customer: {
+                    email: 'rose@unsinkableship.com',
+                    phone_number: '08102909304',
+                    name: 'Rose DeWitt Bukater',
+                },
+                customizations: {
+                    title: 'Elearning Training',
+                    description: 'Payment for Elearning Training',
+                    logo: 'https://www.campus.africa/wp-content/uploads/2018/04/249270c90489c478489dd462bfce82191f3b9429.jpg',
+                },
+            });
+        }
+    </script>
+</body>
+
+</html> --}}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0ebeb;
+            color: #fff;
+            font-family: sans-serif;
+        }
+
+        .form-container {
+            background-color: rgb(255, 255, 255);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            margin-top: 50px;
+        }
+
+        .form-control:focus {
+            background-color: rgba(173, 220, 231, 0.7);
+            border-color: #66afe9;
+            box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);
+            color: #0b0b0b;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            <div class="col-md-8 form-container">
+                <img src="https://www.campus.africa/wp-content/uploads/2018/04/249270c90489c478489dd462bfce82191f3b9429.jpg"
+                    alt="BSU logo">
+                <h2 class="text-center mb-4" style="color: black">Benue State University Consultancy Services Ltd.</h2>
+                <h4 class="text-center mb-4" style="color: black">E-learning Registration 20204/2025</h4>
+                <form id="registrationForm" action="{{ route('registered.store') }}" method="POST">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name:</label>
+                                <input type="text" name="name" class="form-control" id="name"
+                                    placeholder="Enter your name">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="jambNo" class="form-label">JAMB No:</label>
+                                <input type="text" name="jambNo" class="form-control" id="jambNo"
+                                    placeholder="Enter your JAMB No" pattern="[a-zA-Z0-9]{14}"
+                                    title="Invalid JAMB number. Please enter 14 alphanumeric characters.">
+                            </div>
+                            <div class="mb-3">
+                                <label for="faculty" class="form-label">Faculty:</label>
+                                <input type="text" class="form-control" placeholder="Enter your Faculty">
+                                {{-- <select class="form-control" name="faculty" id="faculty">
+                                    <option value="">Select Faculty</option>
+                                    <option value="engineering">Engineering</option>
+                                    <option value="science">Science</option>
+                                    <option value="arts">Arts</option>
+                                </select> --}}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <input type="email" name="email" class="form-control" id="email"
+                                    placeholder="Enter your email"
+                                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                    title="Invalid email address">
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone_number" class="form-label">Phone No:</label>
+                                <input type="text" name="phone_number" class="form-control" id="jambNo"
+                                    placeholder="Enter your Phone No">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="department" class="form-label">Department:</label>
+                                <input type="text" class="form-control" placeholder="Enter your Department">
+                                {{-- <select class="form-control" name="department" id="department">
+                                    <option value="">Select Department</option>
+                                    <option value="computer_science">Computer Science</option>
+                                    <option value="electrical_engineering">Electrical Engineering</option>
+                                    <option value="mechanical_engineering">Mechanical Engineering</option>
+                                </select> --}}
+                            </div>
+                            <div class="mb-3">
+                                <label for="paymentItem" class="form-label">Payment Item:</label>
+                                <select class="form-control" name="amount" id="amount">
+                                    <option value=" ">Select pay item</option>
+                                    @forelse ($fees as $fee)
+                                        <option value="{{$fee->amount}}">{{$fee->name}}</option>
+                                    @empty
+                                        <option value=" ">No Fee Set up</option>
+                                    @endforelse
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" class="btn btn-primary">Proceed to Pay</button>
+                        </div>
+                        
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+    {{-- <script src="https://checkout.flutterwave.com/v3.js"></script> --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- <script>
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const formObject = {};
+            formData.forEach((value, key) => {
+                formObject[key] = value;
+            });
+
+            FlutterwaveCheckout({
+                // public_key: 'FLWPUBK-685fc799ddd9cf3015440fee7268888b-X',
+                public_key: 'FLWPUBK_TEST-7849c237adfdab2dec589340fafe842a-X',
+                tx_ref: generateTransactionReference(), // Use function to get tx_ref
+                amount: formObject.amount,
+                currency: 'NGN',
+                payment_options: 'card, mobilemoneyghana, ussd',
+                redirect_url: 'http://bsucls.test/handle-flutterwave-payment',
+                meta: {
+                    consumer_id: 23,
+                    consumer_mac: '92a3-912ba-1192a',
+                    jambNo: formObject.jambNo,
+                },
+                customer: {
+                    email: formObject.email,
+                    phone_number: '08102909304',
+                    name: formObject.name,
+                },
+                customizations: {
+                    title: 'Elearning Training',
+                    description: 'Payment for Elearning Training',
+                    logo: 'https://www.campus.africa/wp-content/uploads/2018/04/249270c90489c478489dd462bfce82191f3b9429.jpg',
+                },
+                callback: function(response) {
+                    if (response.status === 'successful') {
+                        fetch("{{ route('registered.store') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify(formObject)
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Registration and payment successful!');
+                                    // Redirect or perform other actions
+                                } else {
+                                    alert('Registration failed. Please try again.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    } else {
+                        alert('Payment failed. Please try again.');
+                    }
+                }
+            });
+
+            function generateTransactionReference() {
+                // Generate a random number (you can adjust the range as needed)
+                const randomNumber = Math.floor(Math.random() * 1000000); // Up to 6 digits
+
+                // Convert the number to a string and pad it with leading zeros if necessary
+                const paddedNumber = String(randomNumber).padStart(6, '0'); // Pad to ensure consistent length
+
+                // Combine with a prefix (optional)
+                const transactionReference = 'bsu-' + paddedNumber;
+
+                return transactionReference;
+
+            }
+
+        });
+    </script> --}}
 </body>
 
 </html>
