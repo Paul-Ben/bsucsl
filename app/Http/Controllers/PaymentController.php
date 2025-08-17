@@ -128,7 +128,7 @@ class PaymentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Store user registration details
+        
             $user = Registration::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -141,16 +141,16 @@ class PaymentController extends Controller
                 'tx_ref' => $txRef
             ]);
 
-            // Generate transaction reference
-            $subaccountID = "RS_abc123xyz"; // Replace with actual Flutterwave subaccount ID
-            $mainAccountPercentage = 90; // 90% to main account
+            
+            $subaccountID = "RS_abc123xyz"; 
+            $mainAccountPercentage = 90; 
             $subAccountPercentage = 10;
 
             $headers = [
                 'Authorization' => 'Bearer ' . $secretKey,
                 'Content-Type' => 'application/json',
             ];
-            // Call Flutterwave API to initiate payment
+            
             $response = Http::withHeaders($headers)->post('https://api.flutterwave.com/v3/payments', [
                 'tx_ref' => $txRef,
                 'amount' => $request->amount,
@@ -227,160 +227,5 @@ class PaymentController extends Controller
         $payment->update(['paymentStatus' => 'failed']);
         return redirect()->route('home')->with('error', 'Payment failed.');
     }
-    // public function store(Request $request)
-    // {
-
-    //     $request->validate([
-    //         'name' => 'required',
-    //         'email' => 'required|email',
-    //         // 'phone' => 'required',
-    //         'amount' => 'required',
-    //         'jambNo' => 'required',
-    //         'faculty' => 'required',
-    //         'department' => 'required',
-    //     ]);
-
-    //     $transaction = Transaction::create([
-    //         'name' => $request->name,
-    //         'email' => $request->email,
-    //         // 'phone' => $request->phone,
-    //         'amount' => $request->amount,
-    //         'jamb_no' => $request->jambNo,
-    //         'faculty' => $request->faculty,
-    //         'department' => $request->department,
-    //     ]);
-
-    //     return redirect()->route('payment.initialize', ['transaction' => $transaction]);
-    // }
-
-    /**
-     * Initialize a Flutterwave Payment
-     */
-    // public function initialize(Request $request)
-    // {
-    //     $secretKey = env('FLW_SECRET_KEY');
-    //     $url = 'https://api.flutterwave.com/v3/payments';
-    //     $tx_ref = 'BSUCSL2025' . substr(rand(0000, time()), 0, 8);
-
-    //     $request->validate([
-    //         'name' => 'required',
-    //         'email' => 'required|email',
-    //         'phone' => 'required',
-    //         'amount' => 'required',
-    //         'jambNo' => 'required',
-    //         'faculty' => 'required',
-    //         'department' => 'required',
-    //     ]);
-
-    //     $data = [
-    //         'tx_ref' => $tx_ref,
-    //         'amount' => $request->amount,
-    //         'currency' => 'NGN',
-    //         'redirect_url' => route('payment.callback'),
-    //         'customer' => [
-    //             'email' => $request->email,
-    //             'name' => $request->name,
-    //             'phonenumber' => $request->phone,
-    //         ],
-    //         'meta' => [
-    //             'jambNo' => $request->jambNo,
-    //             'faculty' => $request->faculty,
-    //             'department' => $request->department,
-    //         ],
-    //         'customizations' => [
-    //             'title' => 'BSU-CSL E-Learning Registration',
-    //         ],
-    //     ];
-
-    //     $headers = [
-    //         'Authorization' => 'Bearer ' . $secretKey,
-    //         'Content-Type' => 'application/json',
-    //     ];
-
-    //     try {
-    //         // $response = Http::withHeaders($headers)->post($url, $data);
-    //         $response = Http::accept('application/json')->withHeaders([
-    //             'authorization' => env('FLW_PUBLIC_KEY'),
-    //             'content-type' => 'application/json',
-    //             'cache-control' => 'no-cache',
-    //         ])->post($url, $data);
-
-    //         if ($response->successful()) {
-    //             $responseData = $response->json();
-    //         Log::info('Payment Initialized Successfully: ' . json_encode($responseData));
-    //             return view('payment.redirect', ['payment_link' => $responseData['data']['link']]);
-    //         } else {
-    //             Log::error('Payment Initialization Failed: ' . $response->body());
-    //             return view('payment.error', ['message' => 'Payment initialization failed.']);
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Payment Initialization Error: ' . $e->getMessage());
-    //         return view('payment.error', ['message' => 'An error occurred during initialization: ' . $e->getMessage()]);
-    //     }
-    // }
-
-    // /**
-    //  * Handle the Flutterwave Payment Callback
-    //  */
-    // public function callback(Request $request)
-    // {
-    //     $transaction_id = $request->query('transaction_id'); // Get transaction ID from Flutterwave
-
-    //     if (!$transaction_id) {
-    //         return view('payment.error', ['message' => 'Transaction ID is missing.']);
-    //     }
-
-    //     // Verify Transaction
-    //     $secretKey = env('FLW_SECRET_KEY');
-    //     $url = "https://api.flutterwave.com/v3/transactions/{$transaction_id}/verify";
-
-    //     try {
-    //         $response = Http::withHeaders([
-    //             'Authorization' => 'Bearer ' . $secretKey,
-    //             'Content-Type' => 'application/json',
-    //         ])->get($url);
-
-    //         $responseData = $response->json();
-
-    //         if ($response->successful() && isset($responseData['data'])) {
-    //             $paymentStatus = $responseData['data']['status']; // 'successful', 'failed', 'pending'
-    //             $tx_ref = $responseData['data']['tx_ref'];
-    //             $amountPaid = $responseData['data']['amount'];
-    //             $customerEmail = $responseData['data']['customer']['email'];
-    //             $metaData = $responseData['data']['meta'] ?? [];
-
-    //             if ($paymentStatus === 'successful') {
-    //                 // Save payment details in the database
-    //                 DB::transaction(function () use ($tx_ref, $amountPaid, $customerEmail, $metaData) {
-    //                     Registration::create([
-    //                         'tx_ref' => $tx_ref,
-    //                         'amount' => $amountPaid,
-    //                         'email' => $customerEmail,
-    //                         'status' => 'successful',
-    //                         'jamb_no' => $metaData['jambNo'] ?? null,
-    //                         'faculty' => $metaData['faculty'] ?? null,
-    //                         'department' => $metaData['department'] ?? null,
-    //                     ]);
-    //                 });
-
-    //                 return view('payment.success', [
-    //                     'tx_ref' => $tx_ref,
-    //                     'amount' => $amountPaid,
-    //                     'email' => $customerEmail
-    //                 ]);
-    //             } else {
-    //                 return view('payment.failed', [
-    //                     'tx_ref' => $tx_ref,
-    //                     'message' => 'Payment failed or is pending.'
-    //                 ]);
-    //             }
-    //         } else {
-    //             return view('payment.error', ['message' => 'Invalid transaction verification response.']);
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Payment Callback Error: ' . $e->getMessage());
-
-    //         return view('payment.error', ['message' => 'An error occurred while verifying payment.']);
-    //     }
-    // }
+    
 }
